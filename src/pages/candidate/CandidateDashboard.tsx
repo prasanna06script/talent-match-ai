@@ -1,6 +1,11 @@
-import { BarChart3, User, FileText, Target, Brain, TrendingUp, Clock, Bell, BookOpen } from "lucide-react";
+import { useState, useRef } from "react";
+import { BarChart3, User, FileText, Target, Brain, TrendingUp, Clock, Bell, BookOpen, Upload, Loader2 } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge } from "@/components/StatusBadge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const atsData = { overall: 82, skills: 88, experience: 75, education: 90 };
 
@@ -23,9 +28,76 @@ const skillGaps = [
   { skill: "System Design", suggestion: "Take system design course", priority: "High" },
 ];
 
-const CandidateDashboard = () => (
+const WEBHOOK_URL = "https://prasanna611.app.n8n.cloud/webhook-test/3f288626-9df7-4af8-840c-e79127a2653e";
+
+const CandidateDashboard = () => {
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [resumeFile, setResumeFile] = useState<File | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
+
+  const handleAnalyze = async () => {
+    if (!name || !email || !resumeFile) {
+      toast({ title: "Missing fields", description: "Please fill in your name, email, and upload a resume.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const formData = new FormData();
+      formData.append("data", resumeFile);
+      formData.append("name", name);
+      formData.append("email", email);
+
+      const response = await fetch(WEBHOOK_URL, {
+        method: "POST",
+        body: formData,
+      });
+
+      if (response.ok) {
+        toast({ title: "Resume sent!", description: "Your resume has been submitted for AI analysis." });
+      } else {
+        toast({ title: "Submission failed", description: "Something went wrong. Please try again.", variant: "destructive" });
+      }
+    } catch (error) {
+      toast({ title: "Network error", description: "Could not reach the server. Please try again.", variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
   <div className="space-y-6">
-    {/* Stats Row */}
+    {/* Resume Upload & Analyze */}
+    <div className="rounded-xl border border-border bg-card p-6">
+      <h2 className="text-lg font-semibold text-card-foreground mb-5 flex items-center gap-2">
+        <Upload className="h-5 w-5 text-accent" /> Upload Resume & Analyze
+      </h2>
+      <div className="grid md:grid-cols-3 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="candidate-name">Full Name</Label>
+          <Input id="candidate-name" placeholder="Your full name" value={name} onChange={(e) => setName(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="candidate-email">Email Address</Label>
+          <Input id="candidate-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="resume-file">Resume (PDF/DOC)</Label>
+          <Input id="resume-file" type="file" accept=".pdf,.doc,.docx" ref={fileInputRef} onChange={(e) => setResumeFile(e.target.files?.[0] || null)} />
+        </div>
+      </div>
+      <div className="mt-4 flex items-center gap-3">
+        <Button onClick={handleAnalyze} disabled={isSubmitting}>
+          {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Analyzing...</> : <><Brain className="mr-2 h-4 w-4" /> Analyze</>}
+        </Button>
+        {resumeFile && <span className="text-sm text-muted-foreground">Selected: {resumeFile.name}</span>}
+      </div>
+    </div>
+
+    {/* Stats Row -- existing */}
     <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
       {[
         { label: "ATS Score", value: "82/100", icon: Brain, color: "text-accent" },
@@ -154,6 +226,7 @@ const CandidateDashboard = () => (
       </div>
     </div>
   </div>
-);
+  );
+};
 
 export default CandidateDashboard;
