@@ -18,6 +18,10 @@ import {
   BarChart3, Settings, Database, Shield
 } from "lucide-react";
 
+// GLOBAL CONFIG: This is your n8n connection point
+// Replace this URL if you ever change your n8n workflow
+const N8N_WEBHOOK_URL = "https://prasanna611.app.n8n.cloud/webhook-test/3f288626-9df7-4af8-840c-e79127a2653e";
+
 const queryClient = new QueryClient();
 
 const candidateNav = [
@@ -61,20 +65,20 @@ const App = () => (
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* Candidate */}
-          <Route element={<DashboardLayout navItems={candidateNav} role="candidate" userName="John Doe" />}>
+          {/* Candidate - Fixed routes for MBA Project demo */}
+          <Route element={<DashboardLayout navItems={candidateNav} role="candidate" userName="Jamuna (Candidate)" />}>
             <Route path="/candidate" element={<CandidateDashboard />} />
             <Route path="/candidate/:page" element={<CandidateDashboard />} />
           </Route>
 
-          {/* Recruiter */}
-          <Route element={<DashboardLayout navItems={recruiterNav} role="recruiter" userName="Jane Smith" />}>
+          {/* Recruiter - For demonstrating the Talent Pool logic */}
+          <Route element={<DashboardLayout navItems={recruiterNav} role="recruiter" userName="Recruiter Admin" />}>
             <Route path="/recruiter" element={<RecruiterDashboard />} />
             <Route path="/recruiter/:page" element={<RecruiterDashboard />} />
           </Route>
 
-          {/* Admin */}
-          <Route element={<DashboardLayout navItems={adminNav} role="admin" userName="Admin User" />}>
+          {/* Admin - For system analytics settings */}
+          <Route element={<DashboardLayout navItems={adminNav} role="admin" userName="System Admin" />}>
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/admin/:page" element={<AdminDashboard />} />
           </Route>
